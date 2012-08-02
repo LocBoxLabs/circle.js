@@ -15,13 +15,36 @@ $(function() {
   $.fn.circle = function ( options )
   {
     var _this = this, events = {};
-    this.options = $.extend({
+    
+    this.options = $.extend(true, {
       bounds: null,
+      events: {},
       offset: 0
     }, options);
-    events.click = $.isFunction(options.click) ? options.click : null;
-    events.mousemove = $.isFunction(options.mousemove) ? options.mousemove : null;
-    this.events = events;
+    
+    this.events = {
+      mousedown: function(e) {
+        _this.status.mousedown = true;
+        _this.trigger('mousedown', e);
+      },
+      mouseup: function(e) {
+        _this.status.mousedown = false;
+        _this.trigger('mouseup', e);
+      },
+      mousemove: function(e) {
+        _this.trigger('mousemove', e);
+      }
+    };
+    
+    this.status = {
+      mousedown: false
+    };
+    
+    this.trigger = function(name, e) {
+      var clientEvent = _this.options.events[name];
+      if (!clientEvent) return;
+      clientEvent.call(_this, _this.util.eventInfo(e), this.status);
+    }
 
     /* Functions */
     this.util = {
@@ -47,7 +70,7 @@ $(function() {
         var x, y, percentage;
         x = Math.round(e.pageX - $(_this).offset().left, 0);
         y = Math.round(e.pageY - $(_this).offset().top, 0);
-        percentage = _this.util.percentage(x, y);
+        percentage = _this.util.percentage(x, y) + _this.options.offset;
         return {
           x: x,
           y: y,
@@ -57,17 +80,10 @@ $(function() {
       }
     };
 
-    $(this).mousemove(function(e) {
-      var mousemove = _this.events.mousemove;
-      if (!mousemove) return;
-
-      mousemove.call(_this, _this.util.eventInfo(e));
-    });
-
-    $(this).click(function(e) {
-      var click = _this.events.click;
-      if (!click) return;
-      click.call(_this, _this.util.eventInfo(e));
+    $(['mousemove', 'mousedown', 'mouseup']).each(function(i,v) {
+      var f = _this.events[v];
+      if (!f) return;
+      $(_this).bind(v, f);
     });
   }
 });
