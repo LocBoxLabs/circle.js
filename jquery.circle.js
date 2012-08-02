@@ -64,7 +64,7 @@ $(function() {
           v = Math.max(v, bounds[0]);
           v = Math.min(v, bounds[1]);
         }
-        return percentage = parseFloat(v.toFixed(2)) + _this.options.offset;
+        return percentage = parseFloat(v.toFixed(2));
       },
       eventInfo: function(e) {
         var x, y, percentage;
