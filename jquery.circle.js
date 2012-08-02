@@ -1,6 +1,6 @@
 /**
  * jquery.circle.js
- * Copyright (c) 2012 Colin Young
+ * Copyright (c) 2012 LocBox Labs
  * Licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
  *
  * @author Colin Young
@@ -16,7 +16,8 @@ $(function() {
   {
     var _this = this, events = {};
     this.options = $.extend({
-      bounds: null
+      bounds: null,
+      offset: 0
     }, options);
     events.click = $.isFunction(options.click) ? options.click : null;
     events.mousemove = $.isFunction(options.mousemove) ? options.mousemove : null;
@@ -40,7 +41,7 @@ $(function() {
           v = Math.max(v, bounds[0]);
           v = Math.min(v, bounds[1]);
         }
-        return percentage = parseFloat(v.toFixed(2));
+        return percentage = parseFloat(v.toFixed(2)) + _this.options.offset;
       },
       eventInfo: function(e) {
         var x, y, percentage;
