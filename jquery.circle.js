@@ -18,8 +18,10 @@ $(function() {
     
     this.options = $.extend(true, {
       bounds: null,
+      allowWinding: false,
       events: {},
-      offset: 0
+      offset: 0,
+      start: 0
     }, options);
     
     this.events = {
@@ -37,7 +39,11 @@ $(function() {
     };
     
     this.status = {
-      mousedown: false
+      mousedown: false,
+      outOfBounds: false,
+      position: {
+        percentage: this.options.start
+      }
     };
     
     this.trigger = function(name, e) {
@@ -53,7 +59,10 @@ $(function() {
         var bounds = _this.options.bounds,
                  d = $(_this).width(),
              theta = 0,
-                 v = 0;
+                 v = 0,
+               max = _this.util.max(),
+               min = _this.util.min(),
+              curr = _this.status.position.percentage;
         theta = Math.atan2((d-2*x), (2*y-d));
         if (x < (d/2)) {
           v = (theta/Math.PI) * 50;
@@ -64,19 +73,44 @@ $(function() {
           v = Math.max(v, bounds[0]);
           v = Math.min(v, bounds[1]);
         }
-        return percentage = parseFloat(v.toFixed(2));
+        
+        // Cap at 2 decimal points
+        v = parseFloat(v.toFixed(2)) + _this.options.offset;
+        
+        // Disable winding around the 0,360 borders
+        if (_this.options.allowWinding === false) {
+          if (_this.status.outOfBounds === false) {
+            _this.status.outOfBounds =  ((curr == max) && (v == min)) ||
+                                        ((curr == min) && (v == max));
+          } else {
+            if ((curr == max && v < curr && v >= max-5) || 
+                (curr == min && v > curr && v <= min+5)) {
+              _this.status.outOfBounds = false;
+            }
+          }
+        }
+        
+        if (_this.status.outOfBounds === true) return _this.status.position.percentage;        
+        
+        return _this.status.position.percentage = v;
       },
       eventInfo: function(e) {
         var x, y, percentage;
         x = Math.round(e.pageX - $(_this).offset().left, 0);
         y = Math.round(e.pageY - $(_this).offset().top, 0);
-        percentage = _this.util.percentage(x, y) + _this.options.offset;
+        percentage = _this.util.percentage(x, y);
         return {
           x: x,
           y: y,
           percentage: percentage,
           degree: percentage/100 * 360
         };
+      },
+      max: function() {
+        return _this.options.bounds[1];
+      },
+      min: function() {
+        return _this.options.bounds[0];
       }
     };
 
