@@ -27,10 +27,16 @@ $(function() {
     this.events = {
       mousedown: function(e) {
         _this.status.mousedown = true;
+
+        // Fix selection cursor override for chrome
+        if (document) document.onselectstart = function(){ return false; }
         _this.trigger('mousedown', e);
       },
       mouseup: function(e) {
         _this.status.mousedown = false;
+        
+        // Fix selection cursor override for chrome
+        if (document) document.onselectstart = null;
         _this.trigger('mouseup', e);
       },
       mousemove: function(e) {
